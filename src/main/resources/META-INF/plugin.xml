@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <id>io.github.poruru210.methodinsight.reporter</id>
+    <name>Method Insight Reporter</name>
+    <version>0.1.0</version>
+    <vendor email="example@yourorg.dev">YourOrg</vendor>
+    <description>
+        Generate a Markdown sequence report that mixes a Mermaid call graph with the tests referencing the selected method.
+    </description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Method Insight Reporter"
+                           displayType="BALLOON"
+                           isLogByDefault="false"/>
+    </extensions>
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true"/>
+    </extensions>
+
+    <actions>
+        <action id="io.github.poruru210.methodinsight.SequenceReportAction"
+                class="io.github.poruru210.methodinsight.actions.SequenceReportAction"
+                text="Generate Sequence Report"
+                description="Produce a Markdown report containing the call graph and tests for the current method">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
+
