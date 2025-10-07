@@ -1,10 +1,18 @@
+# Where: .github/workflows/build.yml
+# What: プラグインビルド用GitHub Actionsワークフロー
+# Why: テストとビルドを自動化しmainブランチおよびタグ作成時に実行するため
+
 name: Build Plugin
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
+    tags:
+      - "**"
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
 
 permissions:
   contents: read
