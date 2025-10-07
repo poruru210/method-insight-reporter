@@ -1,40 +1,38 @@
 # Method Insight Reporter
 
-JetBrains の Unified Abstract Syntax Tree (UAST) API を活用し、カーソル位置のメソッドに対する呼び出し関係とテスト参照を調査して Markdown 形式のシーケンスレポートを生成する IntelliJ IDEA 向けプラグインです。レポートには Mermaid によるコールグラフと、到達可能なメソッドを参照するテストケースがまとめて記載されます。GitHub 上では `method-insight-reporter` リポジトリとして管理することを想定しています。
+Method Insight Reporter is an IntelliJ IDEA plugin that leverages the JetBrains Unified Abstract Syntax Tree (UAST) API to analyse method invocation relationships and test coverage, then emits a Markdown report for the currently selected method. Each report includes a Mermaid sequence diagram alongside a list of relevant methods, making it easy to validate complex call flows and document behaviour. The project is maintained publicly as `method-insight-reporter`.
 
-## 主な機能
+## Features
 
-- **シーケンスレポート生成**: エディタのコンテキストメニューから *Generate Sequence Report* を実行すると、コールグラフの解析・参照テストの特定・`<method>.sequence-report.md` の書き出しまで自動で行います。生成された Markdown には Mermaid ダイアグラムと、メタデータ付きのテストセクション（折りたたみ可能）が含まれます。
-- **通知によるフィードバック**: 処理状況や完了結果は通知グループ `Method Insight Reporter` に表示されます。
+- **Generate sequence reports**  
+  Run *Generate Sequence Report* from the editor context menu to inspect the call chain. The plugin walks the UAST, collects call sites and referenced tests, and writes the result to `<method>.sequence-report.md`. The Markdown contains a Mermaid diagram and summarised test matrices so you can review impact and coverage at a glance.
+- **Background feedback**  
+  Progress and diagnostics appear in the `Method Insight Reporter` notification group so you can continue working while the report is prepared.
 
-## リポジトリ構成
+## Repository Layout
 
-- `docs/specification.md` — プラグインの目的、サポートする JVM 言語、設計上の制約をまとめた仕様ドキュメント。
-- `docs/planning.md` — 実装のための主要マイルストーン。
-- `build.gradle.kts` — IntelliJ IDEA 2024.3（Java/Kotlin バンドル込み）をターゲットにした Gradle 設定。
-- `src/main/kotlin/io/github/poruru210/methodinsight` — 解析・レポート生成・ユーティリティ・アクション定義などの Kotlin ソースコード。
-- `src/main/resources/META-INF/plugin.xml` — アクションや通知グループを登録するプラグイン記述子。
-- `src/test/kotlin/io/github/poruru210/methodinsight/render` — Mermaid レンダリング、JSON 整形、Markdown 出力の単体テスト。
+- `docs/specification.md` - Functional goals, JVM support matrix, and design assumptions.
+- `docs/planning.md` - Planning artefacts gathered during the initial design phase.
+- `build.gradle.kts` - Gradle build configuration targeting IntelliJ IDEA 2024.3 with Java and Kotlin toolchains.
+- `src/main/kotlin/io/github/poruru210/methodinsight` - Kotlin sources that implement report generation, rendering, and IntelliJ actions.
+- `src/main/resources/META-INF/plugin.xml` - Plugin metadata, action registrations, and notification group definitions.
+- `src/test/kotlin/io/github/poruru210/methodinsight/render` - Unit tests covering Mermaid rendering, JSON formatting, and Markdown output.
 
-## 使い方
+## Getting Started
 
-1. IntelliJ Platform Plugin SDK を有効化した IntelliJ IDEA で本プロジェクトを開きます。
-2. `./gradlew build`（Windows の場合は `gradlew.bat build`）でコンパイルと単体テストを実行します。
-3. `./gradlew verifyPlugin` で設定済みの IDE ビルドに対する IntelliJ Plugin Verifier を実行します。
-4. `./gradlew runIde` を実行し、サンドボックス IDE を起動します。
-5. 対象メソッドにカーソルを置き、コンテキストメニューから **Generate Sequence Report** を選択します。
+1. Open the project in IntelliJ IDEA and install the IntelliJ Platform Plugin SDK.
+2. Run `./gradlew build` (or `gradlew.bat build` on Windows) to compile the plugin and execute all tests.
+3. Run `./gradlew verifyPlugin` to validate the plugin against the configured IDE builds with the IntelliJ Plugin Verifier.
+4. Run `./gradlew runIde` to launch a sandbox IDE session with the plugin enabled.
+5. Inside the sandbox IDE, open a source file, choose a method of interest, and invoke **Generate Sequence Report** from the context menu.
 
-生成されたレポートはソースファイルと同じディレクトリに `<method>.sequence-report.md` として作成され、Mermaid ダイアグラムとテスト一覧（各呼び出し単位で折りたたみ可能なコードブロック付き）が含まれます。
+Each report writes a Markdown file named `<method>.sequence-report.md` alongside the source file. Mermaid diagrams can be previewed immediately, while the associated test list helps confirm that the method remains adequately covered.
 
 ## CI / CD
 
-GitHub Actions ワークフロー **Build Plugin** は `main` ブランチへの push および pull request をトリガーに自動実行され、`./gradlew --no-daemon test` → `verifyPlugin` → `buildPlugin` を順番に実行して成果物をアーティファクトとして保存します。ローカルで失敗した場合は同じ Gradle コマンドを順に実行し、状況の再現と修正を行ってください。
+The **Build Plugin** GitHub Actions workflow runs whenever a Git tag is pushed. It executes `./gradlew --no-daemon test`, `verifyPlugin`, and `buildPlugin`, then uploads the resulting ZIP archive as a workflow artifact. Because Gradle commands run on GitHub-hosted runners, rerun the job if transient network issues occur while downloading IntelliJ artifacts or dependencies.
 
-## 参考資料
+## References
 
-- JetBrains UAST ドキュメント（Java / Kotlin / Scala[β] / Groovy[宣言部] をカバーする読み取り専用 PSI 抽象化）。
-- SequencePlugin README — Mermaid 出力や UAST ベースのジェネレーターへの移行について記載された参考プロジェクト。
-
-## Git Versioning
-
-This project uses the [Palantir Git-Version Gradle Plugin](https://github.com/palantir/gradle-git-version) to derive the plugin version from Git metadata. When running `./gradlew buildPlugin`, the generated distribution ZIP and `plugin.xml` will use the output of `git describe --tags --always --first-parent`. CI fetches the full history (`fetch-depth: 0`) so tags are available during the build.
+- JetBrains UAST documentation (Java, Kotlin, Scala, Groovy PSI traversal guidance).
+- SequencePlugin README, which inspired the Mermaid output format and UAST-based analysis patterns.
